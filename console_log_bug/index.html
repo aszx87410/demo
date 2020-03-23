@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+  <title>console.log bug</title>
+  <script>
+    function log() {
+      var obj = {value: 'before'}
+      console.log('before:', obj)
+      obj.value = 'after'
+      console.log('after:', obj)
+    }
+
+  </script>
+</head>
+<body>
+  <p>
+    重現 bug 流程：
+
+    <ol>
+      <li>點下面的按鈕</li>
+      <li>打開 devtool console</li>
+      <li>發現 log 出來的值跟你想像中不一樣</li>
+    </ol>
+
+  </p>
+  <button onclick="log()">點我</button>
+</body>
+</html>
