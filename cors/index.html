@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <script>
+    fetch('http://localhost:3000').then(res => {
+      return res.text()
+    }).then(res => {
+      console.log(res)
+      document.querySelector('div').innerText = res
+    })
+  </script>
+</head>
+
+<body>
+  <div>
+    see console
+  </div>
+</body>
+</html>
