@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>SessionStorage 範例</title>
+  <meta charset="utf-8">
+</head>
+
+<body>
+  <div>
+    這網站沒有任何設置 sessionStorage 的程式碼<br>
+    但如果你是從 index.html 的 a 連結點來的，你可以存取得到
+  </div>
+  <div>
+    sessionStorage 內容：<b></b>
+  </div>
+  <button id='btn'>重新抓取</button><br>
+  <a href="index.html">Back to index.html</a>
+  <script>
+    document.querySelector('b').innerText = sessionStorage.getItem('name')
+    console.log('sessionStorage', sessionStorage)
+    console.log('sessionStorage.name', sessionStorage.name)
+    btn.addEventListener('click', () => {
+      document.querySelector('b').innerText = sessionStorage.getItem('name')
+    console.log('latest sessionStorage', sessionStorage)
+    console.log('latest sessionStorage.name', sessionStorage.name)
+    })
+  </script>
+</body>
+</html>

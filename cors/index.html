@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <script>
-    fetch('http://localhost:3000').then(res => {
+    fetch('https://aszx87410.github.io/demo/cors/index.html').then(res => {
       return res.text()
     }).then(res => {
       console.log(res)
@@ -17,5 +17,12 @@
   <div>
     see console
   </div>
+  <iframe sandbox="allow-scripts allow-forms" src='
+   data:text/html, <!DOCTYPE html>
+     <script>
+       var req = new XMLHttpRequest();
+       fetch("https://aszx87410.github.io/demo/cors/index.html")
+     </script>
+  '></iframe>
 </body>
 </html>
