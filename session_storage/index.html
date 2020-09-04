@@ -24,11 +24,11 @@
     console.log('sessionStorage', sessionStorage)
     console.log('sessionStorage.name', sessionStorage.name)
 
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click',() => {
       sessionStorage.setItem('name', (Math.random()).toString(16))
       document.querySelector('b').innerText = sessionStorage.getItem('name')
-    console.log('updated sessionStorage', sessionStorage)
-    console.log('updated sessionStorage.name', sessionStorage.name)
+      console.log('updated sessionStorage', sessionStorage)
+      console.log('updated sessionStorage.name', sessionStorage.name)
     })
   </script>
 </body>
