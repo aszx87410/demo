@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PrintDemo</title>
+  <script src="https://unpkg.com/pagedjs/dist/paged.polyfill.js"></script> 
+  <script>
+    // @see: https://gitlab.pagedmedia.org/tools/pagedjs/issues/84#note_535
+    class RepeatingTableHeaders extends Paged.Handler {
+      constructor(chunker, polisher, caller) {
+        super(chunker, polisher, caller);
+      }
+
+      afterPageLayout(pageElement, page, breakToken, chunker) {
+        // Find all split table elements
+        let tables = pageElement.querySelectorAll("table[data-split-from]");
+
+        tables.forEach((table) => {
+          // Get the reference UUID of the node
+          let ref = table.dataset.ref;
+          // Find the node in the original source
+          let sourceTable = chunker.source.querySelector("[data-ref='" + ref + "']");
+          // Find if there is a header
+          let header = sourceTable.querySelector("thead");
+          if (header) {
+            // Clone the header element
+            let clonedHeader = header.cloneNode(true);
+            // Insert the header at the start of the split table
+            table.insertBefore(clonedHeader, table.firstChild);
+          }
+        });
+
+      }
+    }
+
+    Paged.registerHandlers(RepeatingTableHeaders);
+  </script>
+  <style>
+    html, body {
+      font-size: 15px;
+    }
+
+    body {
+      margin: 0;
+      -webkit-print-color-adjust: exact; 
+    }
+
+    @page {
+      size: A4;
+      margin-top: 20mm;
+      margin-bottom: 20mm;
+      margin-left: 20mm;
+      margin-right: 20mm;
+    }
+
+    @page {
+      padding-top: 2rem;
+
+      @top-center {
+        content: element(title);
+      }
+
+      @top-right {
+        color: white;
+        content: "第 " counter(page) " 頁，共 " counter(pages) " 頁";
+      }
+
+      @bottom-left {
+        content: element(footer);
+      }
+    }
+
+    @page:nth(1) {
+      padding-top: 0;
+
+      @top-center {
+        content: "";
+      }
+      @top-right {
+        content: "";
+      }
+      @bottom-left {
+        content: "";
+      }
+    }
+
+    .pagedjs_page:not([data-page-number="1"]) 
+    .pagedjs_margin-top-left-corner-holder,
+    .pagedjs_page:not([data-page-number="1"]) .pagedjs_margin-top,
+    .pagedjs_page:not([data-page-number="1"]) .pagedjs_margin-top-right-corner-holder {
+      background: #658db4;
+      outline: 2px #658db4;
+    }
+
+    .cover {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .title {
+      position: running(title);
+      color: white;
+      font-size: 1.25rem;
+    }
+
+    .footer {
+      position: running(footer);
+      font-size: 1rem;
+      color: #999;
+      border-top: 2px solid #ccc;
+    }
+    
+    .row {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+    }
+
+    .col {
+      margin-left: 2rem;
+    }
+
+    .avoid-break {
+      page-break-inside: avoid;
+    }
+
+    .force-break {
+      page-break-before: always;
+    }
+
+    .section + .section {
+      margin-top: 4rem;
+    }
+
+    table {
+      text-align: center;
+      border-collapse: collapse; 
+      margin-top: 2.5rem;
+      width: 100%;
+      font-size: 1.1em;
+    }
+
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    
+    td, th {
+      padding: 1em;
+    }
+  </style>
+</head>
+<body>
+  <div class="cover avoid-break">
+    <h1>技術部落格調查報告</h1>
+    <h2>2021/06/12</h2>
+  </div>
+  
+  <div class="section avoid-break">
+    <div class="title">
+      報告總覽
+    </div>
+    <div class="footer">
+      <p>本文件僅供教學使用，請勿用於商業之用途</p>
+    </div>
+    <h3>網站調查報告 #1</h3>
+    <p>blog.huli.tw</p>
+    <div class="row">
+      <div>
+        <h4>作者介紹</h4>
+        <p>重度拖延症患者，興趣是光想不做，有很多想做的事，卻一件都沒有執行。無聊的時候喜歡寫寫文章，發現自己好像有把事情講得比其他人清楚的能力，相信分享與交流可以讓世界更美好。</p>
+      </div>
+      <div class="col">
+        <h4>網站內容</h4>
+        <p>此部落格採用 Hexo + Minos theme + GitHub Pages 架設而成。有改過 Minos 裡面的一些東西，例如說字體大小、文章列表以及分類頁面等等。這邊是跟技術比較相關的文章，其他文章會放在我的 Medium，哪天如果 Medium 不幸倒掉，會把文章都搬過來這邊。
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="section avoid-break">
+    <h3>網站調查報告 #2</h3>
+    <p>blog.huli.tw</p>
+    <div class="row">
+      <div>
+        <h4>作者介紹</h4>
+        <p>重度拖延症患者，興趣是光想不做，有很多想做的事，卻一件都沒有執行。無聊的時候喜歡寫寫文章，發現自己好像有把事情講得比其他人清楚的能力，相信分享與交流可以讓世界更美好。</p>
+      </div>
+      <div class="col">
+        <h4>網站內容</h4>
+        <p>此部落格採用 Hexo + Minos theme + GitHub Pages 架設而成。有改過 Minos 裡面的一些東西，例如說字體大小、文章列表以及分類頁面等等。這邊是跟技術比較相關的文章，其他文章會放在我的 Medium，哪天如果 Medium 不幸倒掉，會把文章都搬過來這邊。
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="section avoid-break">
+    <h3>網站調查報告 #3</h3>
+    <p>blog.huli.tw</p>
+    <div class="row">
+      <div>
+        <h4>作者介紹</h4>
+        <p>重度拖延症患者，興趣是光想不做，有很多想做的事，卻一件都沒有執行。無聊的時候喜歡寫寫文章，發現自己好像有把事情講得比其他人清楚的能力，相信分享與交流可以讓世界更美好。</p>
+      </div>
+      <div class="col">
+        <h4>網站內容</h4>
+        <p>此部落格採用 Hexo + Minos theme + GitHub Pages 架設而成。有改過 Minos 裡面的一些東西，例如說字體大小、文章列表以及分類頁面等等。這邊是跟技術比較相關的文章，其他文章會放在我的 Medium，哪天如果 Medium 不幸倒掉，會把文章都搬過來這邊。
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="avoid-break force-break">
+    <div class="title">
+      詳細資料表格
+    </div>
+    <h2>原始資料列表</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>網址</th>
+          <th>文章名稱</th>
+          <th>瀏覽次數</th>
+          <th>跳出率</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>blog.huli.tw</td>
+          <td>CORS 完全手冊（一）：為什麼會發生 CORS 錯誤？</td>
+          <td>34532</td>
+          <td>52.3%</td>
+        </tr>
+        <tr>
+          <td>blog.huli.tw</td>
+          <td>CORS 完全手冊（一）：為什麼會發生 CORS 錯誤？</td>
+          <td>34532</td>
+          <td>52.3%</td>
+        </tr>
+        <tr>
+          <td>blog.huli.tw</td>
+          <td>CORS 完全手冊（一）：為什麼會發生 CORS 錯誤？</td>
+          <td>34532</td>
+          <td>52.3%</td>
+        </tr>
+        <tr>
+          <td>blog.huli.tw</td>
+          <td>CORS 完全手冊（一）：為什麼會發生 CORS 錯誤？</td>
+          <td>34532</td>
+          <td>52.3%</td>
+        </tr>
+        <tr>
+          <td>blog.huli.tw</td>
+          <td>CORS 完全手冊（一）：為什麼會發生 CORS 錯誤？</td>
+          <td>34532</td>
+          <td>52.3%</td>
+        </tr>
+        <tr>
+          <td>blog.huli.tw</td>
+          <td>CORS 完全手冊（一）：為什麼會發生 CORS 錯誤？</td>
+          <td>34532</td>
+          <td>52.3%</td>
+        </tr>
+        <tr>
+          <td>blog.huli.tw</td>
+          <td>CORS 完全手冊（一）：為什麼會發生 CORS 錯誤？</td>
+          <td>34532</td>
+          <td>52.3%</td>
+        </tr>
+        <tr>
+          <td>blog.huli.tw</td>
+          <td>CORS 完全手冊（一）：為什麼會發生 CORS 錯誤？</td>
+          <td>34532</td>
+          <td>52.3%</td>
+        </tr>
+        <tr>
+          <td>blog.huli.tw</td>
+          <td>CORS 完全手冊（一）：為什麼會發生 CORS 錯誤？</td>
+          <td>34532</td>
+          <td>52.3%</td>
+        </tr>
+        <tr>
+          <td>blog.huli.tw</td>
+          <td>CORS 完全手冊（一）：為什麼會發生 CORS 錯誤？</td>
+          <td>34532</td>
+          <td>52.3%</td>
+        </tr>
+        <tr>
+          <td>blog.huli.tw</td>
+          <td>CORS 完全手冊（一）：為什麼會發生 CORS 錯誤？</td>
+          <td>34532</td>
+          <td>52.3%</td>
+        </tr>
+        <tr>
+          <td>blog.huli.tw</td>
+          <td>CORS 完全手冊（一）：為什麼會發生 CORS 錯誤？</td>
+          <td>34532</td>
+          <td>52.3%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+
+</html>
