@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>clickjacking demo</title>
+    <style>
+      iframe {
+        position: relative;
+        width: 500px;
+        height: 500px;
+        z-index: 2;
+        opacity: 0.001;
+      }
+
+      .content {
+        position: absolute;
+        top: 30px;
+        left: 40px;
+        z-index: 1;
+      }
+
+      #btn {
+        position: fixed;
+        top: 10px;
+        z-index: 3;
+      }
+
+      .fadeIn {
+        animation: fadeIn 2s;
+        animation-fill-mode: forwards;
+      }
+
+      .fadeOut {
+        animation: fadeOut 2s;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0.001;
+        }
+
+        to {
+         opacity: 0.3;
+       }
+      }
+
+      @keyframes fadeOut {
+        from {
+          opacity: 0.3;
+        }
+
+        to {
+         opacity: 0.001;
+       }
+      }
+    </style>
+    <script>
+      function toggle() {
+        if (f.classList.contains('fadeIn')) {
+          f.classList.remove('fadeIn')
+          f.classList.add('fadeOut')
+        } else {
+          f.classList.remove('fadeOut')
+          f.classList.add('fadeIn')
+        }
+      }
+      </script>
+  </head>
+  <body>
+    <button id="btn" onclick="toggle()">切換透明度</button>
+    <div class="content">
+      <h1>取消訂閱</h1>
+      <p>你確定要取消訂閱 email 嗎？</p>
+      <button>確定取消</button>
+    </div>
+    <iframe id=f src="./demo.html">
+
+  </body>
+</html>
