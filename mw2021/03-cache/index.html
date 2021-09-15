@@ -1,1 +1,32 @@
-test
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content ="width=device-width, initial-scale=1" />
+    <title>search</title>
+  </head>
+  <script>
+  	const list = [
+  		'apple',
+  		'banana',
+  		'candy'
+  	]
+  	const url = new URL(location);
+		const params = new URLSearchParams(url.search);
+		const q = params.get('q')
+  	const result = list.find(item => item.includes(q))
+  </script>
+  <body>
+  	<h1>Search result</h1>
+  	<h2>keyword: <script>document.writeln(q)</script></h2>
+  	<p>
+  		<script>
+  			if (result) {
+  				document.writeln('found: ' + result)
+  			} else {
+  				document.writeln('<img src="error.png" alt="no result">')
+  			}
+  		</script>
+  	</p>
+  </body>
+</html>
