@@ -3,13 +3,18 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content ="width=device-width, initial-scale=1" />
-    <title>search</title>
+    <title>Cookie demo</title>
   </head>
-  <script>
-  	
-  </script>
   <body>
   	<h1>Get cookie</h1>
-
+    <p id=p></p>
   </body>
+  <script>
+  	const iframe = document.createElement('iframe')
+    iframe.src = "https://aszx87410.github.io/demo/mw2021/04-cookie/secret/index.html"
+    iframe.onload = function() {
+      p.innerText = "Cookie:" + iframe.contentWindow.document.cookie)
+    }
+    document.body.appendChild(iframe)
+  </script>
 </html>
