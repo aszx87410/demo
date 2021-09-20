@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>OD 資安研究社資安小挑戰</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="七月份資安小挑戰 - XSS">
+    <style type="text/css">
+      body {
+        font-size: 18px;
+        background: rgb(0, 188, 178);
+      }
+      h1 {
+        text-align: center;
+      }
+      .content {
+        max-width: 700px;
+        margin: 100px auto;
+        border-radius: 20px;
+        border: 3px solid #333;
+        padding: 36px;
+        color: #333;
+        background: rgb(248, 194, 0);
+      }
+      ol {
+        text-align: left;
+        font-size: 1.2rem;
+      }
+      input {
+        font-size: 1.2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      <h1>OD 資安研究社之資安小挑戰 - 七月份</h1>
+      <h2>說明</h2>
+      <ol>
+        <li>本月主題為 XSS，因此請找出這頁面上的 XSS 漏洞</li>
+        <li>挑戰時間為 <b>2021-06-29（二） 11:00 ~ 2021-07-13（二） 11:00 </b></li>
+        <li>挑戰結束後會在成功者中隨機抽 2 位獲得獎金新台幣 200 元</li>
+        <li>於資安研究社頻道中，視狀況會不定時發送提示</li>
+      </ol>
+      <h2>規則</h2>
+      <ol>
+        <li>解法必須在這個頁面成功執行 <b>alert(document.domain)</b></li>
+        <li>解法必須在最新版 Chrome 或是 Firefox 上可以執行</li>
+        <li>找到解法後請在 Teams 內私訊 huli 進行確認並附上 POC</li>
+      </ol>
+      
+      <h2>意見回饋</h2>
+      <form id="form">
+        暱稱：<input id="nicknameInput" type="text"><br><br>
+        想說的話：<br>
+        <textarea id="feedbackInput" rows="10" cols="50"></textarea><br>
+        <button type="button" id="save">暫存</button>&nbsp;<button>送出</button>
+      </form>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.10.1/qs.min.js" referrerpolicy="no-referrer"></script>
+    <script>
+      const maxLength = 20
+      form.onsubmit = e => {
+        e.preventDefault()
+        alert('感謝你的回饋！')
+      }
+
+      save.onclick = e => {
+        const nickname = nicknameInput.value
+        const feedback = feedbackInput.value
+        if (nickname.length > maxLength) {
+          return alert('暱稱最多只能 20 個字喔')
+        }
+        alert('暫存成功！')
+        location = location.pathname + `?nickname=${encodeURIComponent(nickname)}&feedback=${encodeURIComponent(feedback)}`
+      }
+
+      const qs = Qs.parse(location.search.slice(1))
+      if (qs.feedback) {
+        feedbackInput.value = qs.feedback
+      }
+      if (qs.nickname) {
+        if (qs.nickname.length > maxLength) {
+          alert('暱稱最多只能 20 個字喔')
+        } else {
+          const valueAttr = '"' + qs.nickname + '"'
+          nicknameInput.outerHTML = `<input id="nicknameInput" type="text" value=${sanitize(valueAttr)}>`
+        }
+      }
+
+      function sanitize(html) {
+        return html
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/[()]/g, ' ')
+      }
+    </script>
+  </body>
+</html>
