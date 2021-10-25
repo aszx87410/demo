@@ -1,1 +1,25 @@
 
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content ="width=device-width, initial-scale=1" />
+    <title>Cookie demo</title>
+  </head>
+  <body>
+  	<h1>Get pdf content</h1>
+    <embed id="f" onload="loaded()" src="./my.pdf">
+  </body>
+  <script>
+  	window.addEventListener('message', e => {
+      if (e.data.type === 'getSelectedTextReply') {
+        alert(e.data.selectedText)
+      }
+    })
+
+    function loaded() {
+      f.postMessage({type:'selectAll'}, '*')
+      f.postMessage({type:'getSelectedText'}, '*')
+    }
+  </script>
+</html>
