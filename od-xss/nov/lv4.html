@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>OD 資安研究社資安小挑戰</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://cdnjs.cloudflare.com/ajax/libs/qs/">
+    <meta name="robots" content="noindex">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="十一月份資安小挑戰 - XSS">
+    <style type="text/css">
+      body {
+        font-size: 18px;
+        background: rgb(0, 188, 178);
+      }
+      h1 {
+        text-align: center;
+      }
+      .content {
+        max-width: 700px;
+        margin: 100px auto;
+        border-radius: 20px;
+        border: 3px solid #333;
+        padding: 36px;
+        color: #333;
+        background: rgb(248, 194, 0);
+      }
+      ol {
+        text-align: left;
+        font-size: 1.2rem;
+      }
+      input {
+        font-size: 1.2rem;
+      }
+
+      #titleInput {
+        color: black;
+      }
+
+      #contentInput {
+        color: black;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="content">
+      <h1>OD 資安研究社之資安小挑戰 - 十一月份<br>Lv4</h1>
+      <h2>說明</h2>
+      <ol>
+        <li>本月主題為 XSS，因此請找出這頁面上的 XSS 漏洞</li>
+        <li>挑戰時間為 <b>2021-11-08（一） 11:00 ~ 2021-11-22（一） 11:00 </b></li>
+        <li>本次挑戰分為四個等級，Lv1 ~ Lv4</li>
+        <li>於資安研究社頻道中，視狀況會不定時發送提示</li>
+        <li>此頁面為 Lv4，是這次挑戰中最難的等級</li>
+      </ol>
+      <h2>規則</h2>
+      <ol>
+        <li>解法必須在這個頁面成功執行 <b>alert(document.domain)</b></li>
+        <li>為避免意外路徑解法，解法必須在最新版 Chrome 或是 Firefox 上可以執行</li>
+        <li>Lv1 為暖身題，完成 Lv2 以上等級才算挑戰成功</li>
+        <li>找到解法後請在 Teams 內私訊 li.hu 進行確認並附上 POC</li>
+      </ol>
+      
+      <h2>解題筆記本</h2>
+      <form id="form">
+        標題：<input id="titleInput" type="text"><input id="titleColor" type="color"><br><br>
+        內容：<br>
+        <textarea id="contentInput" rows="10" cols="50"></textarea><br><input id="contentColor" type="color"><br>
+        <button type="button" id="save">暫存</button>&nbsp;
+      </form>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.10.1/qs.min.js" referrerpolicy="no-referrer"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
