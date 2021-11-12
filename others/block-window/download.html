@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+</head>
+<body>
+  <button onclick="download()">
+    click me to download
+  </button><br>
+  <a href="block.html">test window block</a>
+  <script>
+    function download() {
+      const responseData = new Blob(['hello world'])
+      newWindow = window.open(URL.createObjectURL(responseData));
+      if (typeof newWindow === 'undefined' || !newWindow || newWindow.closed) {
+        alert('window blocked')
+        downloadBlob(responseData, "test.txt");
+      }
+    }
+
+    function downloadBlob(blob, fileName) {
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      a.href = url;
+      a.download = fileName || 'blob';
+      a.target = '_blank';
+      a.innerText = 'download'
+      document.body.appendChild(a)
+      a.click();
+    }
+
+  </script>
+</body>
+</html>
