@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Short XSS Challenge</title>
+</head>
+
+<body>
+  <p id="p">Short XSS Challenge</p>
+  <script>
+    window.name = 'Hello'
+    if (location.href.includes('q=')) {
+      var url = decodeURIComponent(location.href)
+      var qs = url.split('#')[0].split('?q=')[1] // from ?q= to #
+      p.innerHTML = qs.length > 24 ? 'Too long: ' + qs.length : qs
+    }
+  </script>
+</body>
+</html>
