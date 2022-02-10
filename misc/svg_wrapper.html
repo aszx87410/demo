@@ -1,0 +1,14 @@
+<html>
+<head>
+  <style>script {display: block; white-space: pre}</style>
+</head>
+<body>
+  <div id=payload></div>
+  <script>
+    name = 'alert(1)'
+    onload = () => {
+      payload.innerHTML = '<svg onload=eval(name)>'
+    }
+  </script>
+</body>
+</html>
