@@ -1,0 +1,10 @@
+<html>
+<head></head>
+<body>
+  <div id=payload></div>
+  <script>
+    name = 'alert(1)'
+    payload.innerHTML = '<svg onload=eval(name)>'
+  </script>
+</body>
+</html>
