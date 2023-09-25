@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>clickjacking demo</title>
+    <style>
+      iframe {
+        position: relative;
+        width: 300px;
+        height: 400px;
+        z-index: 2;
+        opacity: 1;
+        border: 0;
+        top: -30px;
+      }
+
+      .content {
+        position: absolute;
+        top: 0px;
+        left: 30px;
+        z-index: 3;
+        background: white;
+      }
+
+      .content h1 {
+        margin-top: 70px;
+      }
+
+      .content div {
+        margin-top: 25px;
+      }
+
+      #btn {
+        position: fixed;
+        top: 10px;
+        z-index: 4;
+      }
+      .btn-overlay {
+        background: white;
+        width: 80%;
+        position: absolute;
+        top: 285px;
+        left: 30px;
+        z-index: 3;
+        pointer-events: none;
+      }
+      #confirm {
+        width: 60px;
+        height: 50px;
+      }
+
+      .fadeIn {
+        animation: fadeIn 2s;
+        animation-fill-mode: forwards;
+      }
+
+      .fadeOut {
+        animation: fadeOut 2s;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0.8;
+        }
+
+        to {
+         opacity: 1;
+       }
+      }
+
+      @keyframes fadeOut {
+        from {
+          opacity: 1;
+        }
+
+        to {
+         opacity: 0.8;
+       }
+      }
+    </style>
+    <script>
+      function toggle() {
+        const a = document.querySelector('.content')
+        const b = document.querySelector('.btn-overlay')
+        if (a.classList.contains('fadeOut')) {
+          a.classList.remove('fadeOut')
+          a.classList.add('fadeIn')
+          b.classList.remove('fadeOut')
+          b.classList.add('fadeIn')
+        } else {
+          a.classList.remove('fadeIn')
+          a.classList.add('fadeOut')
+          b.classList.remove('fadeIn')
+          b.classList.add('fadeOut')
+        }
+      }
+      </script>
+  </head>
+  <body>
+    <button id="btn" onclick="toggle()">Switch opacity</button>
+    <div class="content">
+      <h1>Subcribe my blog</h1>
+      <p>Enter your email below to subscribe</p>
+      <div>Email</div>
+    </div>
+    <div class="btn-overlay">
+      <button id=confirm>Confirm</button>
+    </div>
+    
+    <iframe id=f src="./demo.html">
+
+  </body>
+</html>

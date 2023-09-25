@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Profile - clickjacking demo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  </head>
+  <body>
+  <section class="section">
+    <div class="container">
+      <h1 class="title" id="pageTitle">
+        Profile
+      </h1>
+      <p class="subtitle">
+        Update profile
+      </p>
+      <div>
+        <button class="button is-link" onclick="pageTitle.innerText='Account deleted';alert('Account deleted')">Delete account</button>
+      </div>
+      <br>
+
+      <div class="field">
+        <label class="label">New Email</label>
+        <div class="control">
+          <input class="input" type="email">
+          <span class="icon is-small is-right">
+            <i class="fas fa-exclamation-triangle"></i>
+          </span>
+        </div>
+      </div>
+
+      <div class="field is-grouped">
+        <div class="control">
+          <button class="button is-link" onclick="pageTitle.innerText='Email updated!';alert('Email updated');">Update</button>
+        </div>
+        <div class="control">
+          <button class="button is-link is-light">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  </body>
+</html>
