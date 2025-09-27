@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="origin-trial" content="Apukgz5C+Xvk3TaAd/KH6rGIEQizXm21Qin2Bc+z4pgJzCjIQP0fNnVMUY3TQiGPkcdBrromEFZKymYqhn+V0gsAAABneyJvcmlnaW4iOiJodHRwczovL2Fzeng4NzQxMC5naXRodWIuaW86NDQzIiwiZmVhdHVyZSI6IkFJUHJvbXB0QVBJTXVsdGltb2RhbElucHV0IiwiZXhwaXJ5IjoxNzc0MzEwNDAwfQ==">
+    <title>瀏覽器內建 Prompt API 範例</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .status.checking {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status.available {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.not-available {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.downloading {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .download-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            font-weight: bold;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 30px;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .chat-section {
+            margin-top: 30px;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .prompt-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .prompt-input:focus {
+            outline: none;
+            border-color: #74b9ff;
+        }
+
+        .send-btn {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            font-weight: bold;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .response-container {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #74b9ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .response-container.loading-text {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 瀏覽器內建 Prompt API 範例</h1>
+        
+        <div id="status" class="status checking">
+            正在檢查 AI 是不是能用...
+        </div>
+
+        <div id="downloadSection" class="download-section hidden">
+            <p>AI 模型需要下載才能使用</p>
+            <button id="downloadBtn" class="download-btn">下載 AI 模型</button>
+            
+            <div id="progressContainer" class="progress-container hidden">
+                <div id="progressBar" class="progress-bar"></div>
+                <div id="progressText" class="progress-text">0%</div>
+            </div>
+        </div>
+
+        <div id="chatSection" class="chat-section hidden">
+            <div class="input-container">
+                <textarea 
+                    id="promptInput" 
+                    class="prompt-input" 
+                    placeholder="輸入你的問題...&#10;按 Ctrl+Enter 發送" 
+                    rows="3"
+                >你可以做什麼？</textarea>
+                <button id="sendBtn" class="send-btn">送出</button>
+            </div>
+            
+            <div id="responseContainer" class="response-container">
+                在這裡輸入問題後，AI 的回應會顯示在這裡...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM 元素
+        const statusEl = document.getElementById('status');
+        const downloadSection = document.getElementById('downloadSection');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const chatSection = document.getElementById('chatSection');
+        const promptInput = document.getElementById('promptInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const responseContainer = document.getElementById('responseContainer');
+
+        // 更新狀態顯示
+        function updateStatus(message, className) {
+            statusEl.textContent = message;
+            statusEl.className = `status ${className}`;
+        }
+
+        // 顯示/隱藏元素
+        function toggleElement(element, show) {
+            if (show) {
+                element.classList.remove('hidden');
+            } else {
+                element.classList.add('hidden');
+            }
+        }
+
+        // 下載時間跟踪變數
+        let downloadStartTime = null;
+        let lastUpdateTime = null;
+        let lastProgress = 0;
+        let progressHistory = []; // 儲存最近的進度歷史，用於更準確的速度計算
+        let lastDisplayedPercentage = -1; // 記錄上次顯示的百分比
+
+        // 更新下載進度
+        function updateProgress(progress) {
+            const percentage = Math.round(progress * 100);
+            const currentTime = Date.now();
+            
+            // 初始化時間記錄
+            if (downloadStartTime === null) {
+                downloadStartTime = currentTime;
+                lastUpdateTime = currentTime;
+                lastProgress = progress;
+                progressHistory = [];
+                lastDisplayedPercentage = -1;
+            }
+            
+            // 總是更新進度條視覺效果
+            progressBar.style.width = `${percentage}%`;
+            
+            // 只在百分比變化時才更新文字和計算剩餘時間
+            if (percentage !== lastDisplayedPercentage) {
+                // 記錄進度歷史（保留最近30個數據點）
+                progressHistory.push({
+                    time: currentTime,
+                    progress: progress,
+                    percentage: percentage
+                });
+                if (progressHistory.length > 30) {
+                    progressHistory.shift();
+                }
+                
+                // 計算剩餘時間
+                let displayText = `${percentage}%`;
+                
+                if (percentage > 0 && percentage < 100) {
+                    const elapsedTime = (currentTime - downloadStartTime) / 1000; // 秒
+                    
+                    if (elapsedTime > 3 && progressHistory.length >= 3) { // 至少等待3秒並有足夠數據點再開始預測
+                        // 使用最近的數據點計算平均速度（更準確）
+                        const recentHistory = progressHistory.slice(-5); // 使用最近5個數據點
+                        if (recentHistory.length >= 2) {
+                            const firstPoint = recentHistory[0];
+                            const lastPoint = recentHistory[recentHistory.length - 1];
+                            const timeSpan = (lastPoint.time - firstPoint.time) / 1000; // 秒
+                            const progressSpan = lastPoint.progress - firstPoint.progress;
+                            
+                            if (timeSpan > 0 && progressSpan > 0) {
+                                const recentProgressRate = progressSpan / timeSpan; // 最近的進度速度
+                                const remainingProgress = 1 - progress;
+                                let estimatedRemainingTime = remainingProgress / recentProgressRate; // 秒
+                                
+                                // 應用一些平滑處理，避免估算時間跳動太大
+                                if (estimatedRemainingTime > 3600) { // 超過1小時的估算可能不準確
+                                    estimatedRemainingTime = Math.min(estimatedRemainingTime, 7200); // 最多顯示2小時
+                                }
+                                
+                                // 格式化剩餘時間
+                                const remainingTimeText = formatRemainingTime(estimatedRemainingTime);
+                                displayText = `${percentage}% - 預計剩餘: ${remainingTimeText}`;
+                            }
+                        }
+                    } else if (elapsedTime <= 3) {
+                        // 初期顯示正在計算
+                        displayText = `${percentage}% - 正在計算剩餘時間...`;
+                    }
+                }
+                
+                progressText.textContent = displayText;
+                lastDisplayedPercentage = percentage;
+            }
+            
+            lastUpdateTime = currentTime;
+            lastProgress = progress;
+        }
+
+        // 格式化剩餘時間顯示
+        function formatRemainingTime(seconds) {
+            if (seconds < 60) {
+                return `${Math.ceil(seconds)} 秒`;
+            } else if (seconds < 3600) {
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = Math.ceil(seconds % 60);
+                return `${minutes} 分 ${remainingSeconds} 秒`;
+            } else {
+                const hours = Math.floor(seconds / 3600);
+                const remainingMinutes = Math.floor((seconds % 3600) / 60);
+                return `${hours} 小時 ${remainingMinutes} 分`;
+            }
+        }
+
+        // 檢查 AI 可用性
+        async function checkAIAvailability() {
+            try {
+                // 檢查瀏覽器是否支援 Prompt API
+                if (!('LanguageModel' in window)) {
+                    updateStatus('❌ 此瀏覽器不支援 Prompt API', 'not-available');
+                    return;
+                }
+                const availability = await LanguageModel.availability();
+                console.log('availability',availability);
+                
+                if (availability === 'unavailable') {
+                    updateStatus('❌ AI 功能不可用', 'not-available');
+                } else if (availability === 'downloadable') {
+                    updateStatus('⬇️ AI 需要下載後才能使用', 'checking');
+                    toggleElement(downloadSection, true);
+                } else if (availability === 'available') {
+                    updateStatus('✅ AI 已就緒！', 'available');
+                    toggleElement(chatSection, true);
+                }
+            } catch (error) {
+                console.error('檢查 AI 可用性時發生錯誤:', error);
+                updateStatus('❌ 檢查 AI 可用性時發生錯誤', 'not-available');
+            }
+        }
+
+        // 下載 AI 模型
+        async function downloadAIModel() {
+            try {
+                // 重置時間跟踪變數
+                downloadStartTime = null;
+                lastUpdateTime = null;
+                lastProgress = 0;
+                progressHistory = [];
+                lastDisplayedPercentage = -1;
+                
+                downloadBtn.disabled = true;
+                downloadBtn.textContent = '下載中...';
+                toggleElement(progressContainer, true);
+                updateStatus('📥 正在下載 AI 模型，檔案有點大，請確保是使用 wifi 網路以及請勿關閉視窗', 'downloading');
+
+                // 根據官方文件，使用 monitor 回調來追蹤下載進度
+                await LanguageModel.create({
+                    monitor(m) {
+                        // 監控下載進度
+                        m.addEventListener('downloadprogress', (e) => {
+                            updateProgress(e.loaded);
+                            if (e.loaded >= 1) {
+                                updateStatus('✅ AI 下載完成並已就緒！', 'available');
+                                toggleElement(downloadSection, false);
+                                toggleElement(chatSection, true);
+                            }
+                        });
+                    }
+                });
+
+            } catch (error) {
+                console.error('下載 AI 模型時發生錯誤:', error);
+                updateStatus('❌ 下載 AI 模型失敗', 'not-available');
+                downloadBtn.disabled = false;
+                downloadBtn.textContent = '重新下載';
+            }
+        }
+
+        // 發送提示並獲取回應
+        async function sendPrompt() {
+            const prompt = promptInput.value.trim();
+            if (!prompt) return;
+
+            sendBtn.disabled = true;
+            sendBtn.textContent = '處理中...';
+            
+            // 顯示載入狀態
+            responseContainer.className = 'response-container loading-text';
+            responseContainer.innerHTML = '<div class="loading"></div>正在思考中...';
+
+            try {
+                const session = await LanguageModel.create();
+                const response = await session.prompt(prompt);
+                
+                // 顯示回應
+                responseContainer.className = 'response-container';
+                responseContainer.textContent = response;
+                
+            } catch (error) {
+                console.error('獲取 AI 回應時發生錯誤:', error);
+                responseContainer.className = 'response-container';
+                responseContainer.textContent = `❌ 發生錯誤: ${error.message}`;
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '送出';
+            }
+        }
+
+        // 事件監聽器
+        downloadBtn.addEventListener('click', downloadAIModel);
+        sendBtn.addEventListener('click', sendPrompt);
+        
+        promptInput.addEventListener('keydown', (e) => {
+            // Ctrl+Enter 或 Cmd+Enter 發送訊息
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !sendBtn.disabled) {
+                e.preventDefault();
+                sendPrompt();
+            }
+        });
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAIAvailability();
+        });
+    </script>
+</body>
+</html>
