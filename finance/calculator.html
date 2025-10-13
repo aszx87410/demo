@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>退休模擬計算機</title>
+  <meta name="description" content="退休模擬計算機：估算累積資產、退休年齡、第一年提領金額與通膨影響。" />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="calculator.html" />
+  <meta name="theme-color" content="#2563eb" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="zh_TW" />
+  <meta property="og:title" content="退休模擬計算機" />
+  <meta property="og:description" content="估算累積到退休門檻、退休年齡與首年提領金額，並可考量通膨。" />
+  <meta property="og:image" content="og_retire.png" />
+  <meta property="og:url" content="calculator.html" />
+  <meta property="og:site_name" content="財務與退休工具" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="退休模擬計算機" />
+  <meta name="twitter:description" content="估算累積資產、退休年齡與首年提領金額，並可考量通膨。" />
+  <meta name="twitter:image" content="og_retire.png" />
+  <style>
+:root {
+  --fg: #1f2328;
+  --muted: #6a737d;
+  --accent: #2563eb;
+  --bg: #ffffff;
+  --border: #e1e4e8;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  color: var(--fg);
+  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+}
+
+.container {
+  max-width: 1080px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+h1 {
+  margin: 0 0 16px 0;
+  font-size: 24px;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field label {
+  font-size: 12px;
+  color: var(--muted);
+}
+.field input,
+.field select {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+}
+
+.actions {
+  display: flex;
+}
+button {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+}
+button:hover {
+  opacity: 0.9;
+}
+
+.chart-wrap {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.table-wrap {
+  margin-top: 16px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th,
+td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+}
+th:first-child,
+td:first-child {
+  text-align: left;
+}
+thead th {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.muted {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.pct-up {
+  color: #16a34a;
+}
+.pct-down {
+  color: #dc2626;
+}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
+  <style>
+    body { visibility: visible; }
+    .highlight-row {
+      background-color: #fffbeb;
+      font-weight: 600;
+    }
+    .retired-section {
+      background-color: #f0fdf4;
+    }
+    .result-summary {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    .result-summary h2 {
+      margin: 0 0 12px 0;
+      font-size: 18px;
+      color: #1e40af;
+    }
+    .result-summary p {
+      margin: 6px 0;
+      font-size: 16px;
+    }
+    .result-summary .highlight {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1e40af;
+    }
+
+    /* 手機版響應式布局 */
+    @media (max-width: 768px) {
+      .controls {
+        grid-template-columns: repeat(3, 1fr) !important;
+      }
+      
+      .actions {
+        grid-column: span 3;
+      }
+
+      .result-summary h2 {
+        font-size: 16px;
+      }
+
+      .result-summary p {
+        font-size: 14px;
+      }
+
+      .result-summary .highlight {
+        font-size: 18px;
+      }
+
+      /* 表格橫向滾動 */
+      .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      table {
+        font-size: 14px;
+      }
+
+      th, td {
+        padding: 6px 8px;
+        white-space: nowrap;
+      }
+    }
+
+    /* 極小螢幕 */
+    @media (max-width: 480px) {
+      .controls {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+
+      .actions {
+        grid-column: span 2;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 4px 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>退休模擬計算機</h1>
+    <p class="muted" style="margin: 6px 0 16px;">
+      搭配閱讀：
+      <a href="https://life.huli.tw/2025/10/13/not-so-complete-retirement-guide-1/" target="_blank">半科學退休手冊 - Huli's blog</a>
+    </p>
+
+    <form id="calculator-form" class="controls">
+      <div class="field">
+        <label for="currentAge">現在年齡</label>
+        <input id="currentAge" name="currentAge" type="number" min="0" max="100" step="1" value="30" required />
+      </div>
+
+      <div class="field">
+        <label for="initialCapital">初始資金（萬元）</label>
+        <input id="initialCapital" name="initialCapital" type="number" min="0" step="1" value="100" required />
+      </div>
+
+      <div class="field">
+        <label for="annualContribution">每年投入（萬元）</label>
+        <input id="annualContribution" name="annualContribution" type="number" min="0" step="1" value="50" required />
+      </div>
+
+      <div class="field">
+        <label for="expectedReturn">預期年化報酬率 (%)</label>
+        <input id="expectedReturn" name="expectedReturn" type="number" min="0" max="100" step="0.1" value="10" required />
+      </div>
+
+      <div class="field">
+        <label for="annualExpense">退休後年生活費（萬元）</label>
+        <input id="annualExpense" name="annualExpense" type="number" min="0" step="1" value="60" required />
+      </div>
+
+      <div class="field">
+        <label for="withdrawalRate">退休後提領率 (%)</label>
+        <input id="withdrawalRate" name="withdrawalRate" type="number" min="0" max="100" step="0.1" value="4" required />
+      </div>
+
+      <div class="field">
+        <label for="inflationRate">通膨率 (%)</label>
+        <input id="inflationRate" name="inflationRate" type="number" min="0" max="100" step="0.1" value="3" required />
+      </div>
+
+      <div class="actions">
+        <button type="submit">計算</button>
+      </div>
+    </form>
+
+    <div id="result-summary"></div>
+
+    <section class="chart-wrap" style="display: none;">
+      <canvas id="chart" height="120"></canvas>
+    </section>
+
+    <section id="table-wrap" class="table-wrap"></section>
+  </main>
+  <script>
+(() => {
+  const form = document.getElementById('calculator-form');
+  const chartCanvas = document.getElementById('chart');
+  const tableWrap = document.getElementById('table-wrap');
+  const resultSummary = document.getElementById('result-summary');
+  const chartWrap = document.querySelector('.chart-wrap');
+
+  let chartInstance = null;
+
+  function formatWanWithUnit(value) {
+    const wan = Math.floor((value || 0));
+    if (wan >= 10000) {
+      const yi = wan / 10000;
+      return `${yi.toFixed(1)} 億`;
+    }
+    return `${new Intl.NumberFormat('zh-Hant').format(wan)} 萬`;
+  }
+
+  function computeRetirement(params) {
+    const {
+      currentAge,
+      initialCapital, // 萬元
+      annualContribution, // 萬元
+      expectedReturn, // 小數
+      annualExpense, // 萬元
+      withdrawalRate, // 小數
+      inflationRate // 小數
+    } = params;
+
+    // 計算退休所需總資產（第一年的購買力基準）
+    const baseRetirementTarget = annualExpense / withdrawalRate;
+
+    const results = [];
+    const currentYear = new Date().getFullYear();
+    let age = currentAge;
+    let year = 1;
+    let calendarYear = currentYear;
+    let assets = initialCapital; // 萬元
+    let totalContributions = initialCapital; // 累積本金
+    let isRetired = false;
+    let retirementAge = null;
+    let retirementYearTarget = null; // 達到退休時的名目目標
+    let withdrawalAmount = annualExpense; // 初始提領金額
+
+    // 設定最大模擬年數（防止無窮迴圈）
+    const maxYears = 100;
+
+    while (year <= maxYears) {
+      // 第一年直接記錄初始狀態
+      if (year === 1) {
+        const nominalAssets = assets;
+        const realAssets = assets; // 第一年實質等於名目
+        const returnRate = 0; // 第一年還沒有報酬
+
+        results.push({
+          year,
+          age,
+          calendarYear,
+          nominalAssets,
+          realAssets,
+          returnRate,
+          isRetired: false,
+          withdrawalAmount: 0,
+          totalContributions,
+          retirementTargetThisYear: baseRetirementTarget,
+          expectedWithdrawalIfRetire: annualExpense
+        });
+
+        year++;
+        age++;
+        calendarYear++;
+        continue;
+      }
+
+      // 計算本年度的退休目標（隨通膨調整）
+      const inflationMultiplier = Math.pow(1 + inflationRate, year - 1);
+      const retirementTargetThisYear = baseRetirementTarget * inflationMultiplier;
+
+      // 檢查是否達到退休條件（用實質資產比較實質目標，等同於用名目資產比較通膨調整後的名目目標）
+      if (!isRetired && assets >= retirementTargetThisYear) {
+        isRetired = true;
+        retirementAge = age;
+        retirementYearTarget = retirementTargetThisYear;
+        // 設定退休時的提領金額（按通膨調整）
+        withdrawalAmount = annualExpense * inflationMultiplier;
+      }
+
+      // 計算本年度變化
+      if (isRetired) {
+        // 退休後：先提領，再計算報酬
+        assets = assets - withdrawalAmount;
+        assets = assets * (1 + expectedReturn);
+        
+        // 下一年的提領金額隨通膨增加
+        const nextWithdrawalAmount = withdrawalAmount * (1 + inflationRate);
+        
+        const discount = Math.pow(1 + inflationRate, year - 1);
+        const nominalAssets = assets;
+        const realAssets = assets / discount;
+        const returnRate = (nominalAssets / totalContributions) - 1;
+
+        results.push({
+          year,
+          age,
+          calendarYear,
+          nominalAssets,
+          realAssets,
+          returnRate,
+          isRetired: true,
+          withdrawalAmount: withdrawalAmount,
+          totalContributions,
+          retirementTargetThisYear,
+          expectedWithdrawalIfRetire: withdrawalAmount
+        });
+
+        withdrawalAmount = nextWithdrawalAmount;
+
+        // 如果資產耗盡，停止模擬
+        if (assets <= 0) {
+          break;
+        }
+
+        // 最多模擬到 80 歲
+        if (age >= 80) {
+          break;
+        }
+      } else {
+        // 退休前：加入年度投入，再計算報酬
+        assets = assets + annualContribution;
+        totalContributions += annualContribution;
+        assets = assets * (1 + expectedReturn);
+
+        const discount = Math.pow(1 + inflationRate, year - 1);
+        const nominalAssets = assets;
+        const realAssets = assets / discount;
+        const returnRate = (nominalAssets / totalContributions) - 1;
+
+        results.push({
+          year,
+          age,
+          calendarYear,
+          nominalAssets,
+          realAssets,
+          returnRate,
+          isRetired: false,
+          withdrawalAmount: 0,
+          totalContributions,
+          retirementTargetThisYear,
+          // 如果本年退休需要的提領金額（用於顯示）
+          expectedWithdrawalIfRetire: annualExpense * inflationMultiplier
+        });
+      }
+
+      year++;
+      age++;
+      calendarYear++;
+    }
+
+    return {
+      results,
+      retirementAge,
+      retirementTarget: retirementYearTarget || baseRetirementTarget
+    };
+  }
+
+  function renderSummary(retirementAge, retirementTarget, currentAge, baseTarget, firstYearWithdrawal, inflationRate) {
+    if (retirementAge === null) {
+      resultSummary.innerHTML = `
+        <div class="result-summary">
+          <h2>計算結果</h2>
+          <p>⚠️ 在模擬期間內無法達到退休目標</p>
+          <p>退休所需總資產（今日購買力）：<span class="highlight">${formatWanWithUnit(baseTarget)}</span></p>
+        </div>
+      `;
+    } else {
+      const yearsToRetirement = retirementAge - currentAge;
+      const realWithdrawal = firstYearWithdrawal / Math.pow(1 + inflationRate, yearsToRetirement);
+      resultSummary.innerHTML = `
+        <div class="result-summary">
+          <h2>✨ 計算結果</h2>
+          <p>🎯 退休年齡：<span class="highlight">${retirementAge} 歲</span></p>
+          <p>⏰ 距離退休：<span class="highlight">${yearsToRetirement} 年</span></p>
+          <p>💰 退休時總資產（名目）：<span class="highlight">${formatWanWithUnit(retirementTarget)}</span></p>
+          <p style="font-size: 13px; color: #6b7280; margin-top: 4px;">（相當於今日購買力 ${formatWanWithUnit(baseTarget)}）</p>
+          <p>📤 退休第一年提領：<span class="highlight">${formatWanWithUnit(firstYearWithdrawal)}</span></p>
+          <p style="font-size: 13px; color: #6b7280; margin-top: 4px;">（相當於今日購買力 ${formatWanWithUnit(realWithdrawal)}）</p>
+        </div>
+      `;
+    }
+  }
+
+  function renderChart(results) {
+    const labels = results.map(r => `+${r.year - 1}`);
+    const realSeries = results.map(r => r.realAssets);
+    // 實質退休目標（固定值）
+    const baseTarget = results[0]?.retirementTargetThisYear || 0;
+    const realRetirementTargetSeries = results.map(() => baseTarget);
+    
+    // 找到退休那年的索引
+    const retirementIndex = results.findIndex((r, idx) => idx > 0 && r.isRetired && !results[idx - 1].isRetired);
+
+    if (chartInstance) {
+      chartInstance.destroy();
+      chartInstance = null;
+    }
+
+    chartWrap.style.display = '';
+
+    const chartOptions = {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.dataset.label}: ${formatWanWithUnit(ctx.parsed.y)}`
+          }
+        }
+      },
+      scales: {
+        y: {
+          ticks: {
+            callback: (v) => {
+              const wan = Math.floor(v);
+              if (wan >= 10000) {
+                return (wan / 10000).toFixed(1) + ' 億';
+              }
+              return new Intl.NumberFormat('zh-Hant').format(wan) + ' 萬';
+            }
+          }
+        }
+      }
+    };
+
+    // 如果找到退休年份，添加垂直线标注
+    if (retirementIndex >= 0) {
+      chartOptions.plugins.annotation = {
+        annotations: {
+          retirementLine: {
+            type: 'line',
+            xMin: retirementIndex,
+            xMax: retirementIndex,
+            borderColor: '#f59e0b',
+            borderWidth: 2,
+            borderDash: [6, 6],
+            label: {
+              display: true,
+              content: '🎉 退休',
+              position: 'start',
+              backgroundColor: '#f59e0b',
+              color: '#fff',
+              padding: 4,
+              font: {
+                size: 11
+              }
+            }
+          }
+        }
+      };
+    }
+
+    chartInstance = new Chart(chartCanvas.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: '總資產（實質）',
+            data: realSeries,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            tension: 0.2,
+            yAxisID: 'y',
+          },
+          {
+            label: '退休門檻（實質）',
+            data: realRetirementTargetSeries,
+            borderColor: '#16a34a',
+            backgroundColor: 'transparent',
+            borderDash: [8, 4],
+            tension: 0,
+            pointRadius: 0,
+            yAxisID: 'y',
+          }
+        ]
+      },
+      options: chartOptions
+    });
+  }
+
+  function renderTable(results) {
+    const headers = ['年份', '年齡', '總資產（名目）', '總資產（實質）', '年度提領金額', '狀態'];
+    const rows = results.map((r, idx) => {
+      const isRetirementYear = idx > 0 && r.isRetired && !results[idx - 1].isRetired;
+      const rowClass = isRetirementYear ? 'highlight-row' : (r.isRetired ? 'retired-section' : '');
+      
+      // 提領金額顯示邏輯
+      let withdrawalText, withdrawalClass;
+      if (r.isRetired) {
+        // 退休後顯示實際提領金額
+        withdrawalText = formatWanWithUnit(r.withdrawalAmount);
+        withdrawalClass = '';
+      } else {
+        // 退休前顯示預期提領金額（如果那一年退休的話）
+        withdrawalText = '(' + formatWanWithUnit(r.expectedWithdrawalIfRetire) + ')';
+        withdrawalClass = 'muted';
+      }
+      
+      return {
+        className: rowClass,
+        cells: [
+          { text: `+${r.year - 1}` },
+          { text: `${r.age} 歲` },
+          { text: formatWanWithUnit(r.nominalAssets) },
+          { text: formatWanWithUnit(r.realAssets) },
+          { text: withdrawalText, className: withdrawalClass },
+          { text: isRetirementYear ? '🎉 達成退休!' : (r.isRetired ? '退休中' : '累積期'), className: isRetirementYear ? 'highlight' : 'muted' }
+        ]
+      };
+    });
+
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    const tbody = document.createElement('tbody');
+
+    const trh = document.createElement('tr');
+    headers.forEach(h => {
+      const th = document.createElement('th');
+      th.textContent = h;
+      trh.appendChild(th);
+    });
+    thead.appendChild(trh);
+
+    rows.forEach(row => {
+      const tr = document.createElement('tr');
+      if (row.className) {
+        tr.className = row.className;
+      }
+      row.cells.forEach(cell => {
+        const td = document.createElement('td');
+        td.textContent = cell.text;
+        if (cell.className) td.className = cell.className;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    tableWrap.innerHTML = '';
+    tableWrap.appendChild(table);
+  }
+
+  function updateURLParams(params) {
+    const searchParams = new URLSearchParams();
+    searchParams.set('age', params.currentAge);
+    searchParams.set('capital', params.initialCapital);
+    searchParams.set('contribution', params.annualContribution);
+    searchParams.set('return', (params.expectedReturn * 100).toFixed(1));
+    searchParams.set('expense', params.annualExpense);
+    searchParams.set('withdrawal', (params.withdrawalRate * 100).toFixed(1));
+    searchParams.set('inflation', (params.inflationRate * 100).toFixed(1));
+    
+    const newURL = `${window.location.pathname}?${searchParams.toString()}`;
+    window.history.pushState({}, '', newURL);
+  }
+
+  function loadParamsFromURL() {
+    const searchParams = new URLSearchParams(window.location.search);
+    
+    if (searchParams.has('age')) {
+      document.getElementById('currentAge').value = searchParams.get('age');
+    }
+    if (searchParams.has('capital')) {
+      document.getElementById('initialCapital').value = searchParams.get('capital');
+    }
+    if (searchParams.has('contribution')) {
+      document.getElementById('annualContribution').value = searchParams.get('contribution');
+    }
+    if (searchParams.has('return')) {
+      document.getElementById('expectedReturn').value = searchParams.get('return');
+    }
+    if (searchParams.has('expense')) {
+      document.getElementById('annualExpense').value = searchParams.get('expense');
+    }
+    if (searchParams.has('withdrawal')) {
+      document.getElementById('withdrawalRate').value = searchParams.get('withdrawal');
+    }
+    if (searchParams.has('inflation')) {
+      document.getElementById('inflationRate').value = searchParams.get('inflation');
+    }
+  }
+
+  function calculate(shouldUpdateURL = true) {
+    const formData = new FormData(form);
+    const params = {
+      currentAge: Number(formData.get('currentAge') || 30),
+      initialCapital: Number(formData.get('initialCapital') || 100),
+      annualContribution: Number(formData.get('annualContribution') || 50),
+      expectedReturn: Number(formData.get('expectedReturn') || 10) / 100,
+      annualExpense: Number(formData.get('annualExpense') || 60),
+      withdrawalRate: Number(formData.get('withdrawalRate') || 4) / 100,
+      inflationRate: Number(formData.get('inflationRate') || 3) / 100,
+    };
+
+    if (shouldUpdateURL) {
+      updateURLParams(params);
+    }
+
+    const { results, retirementAge, retirementTarget } = computeRetirement(params);
+    const baseTarget = params.annualExpense / params.withdrawalRate;
+    
+    // 找到第一年退休的提領金額
+    const firstRetiredYear = results.find(r => r.isRetired);
+    const firstYearWithdrawal = firstRetiredYear ? firstRetiredYear.withdrawalAmount : params.annualExpense;
+    
+    renderSummary(retirementAge, retirementTarget, params.currentAge, baseTarget, firstYearWithdrawal, params.inflationRate);
+    renderChart(results);
+    renderTable(results);
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    try {
+      calculate();
+    } catch (err) {
+      alert(err.message || String(err));
+    }
+  });
+
+  // 初次載入即計算一次
+  window.addEventListener('DOMContentLoaded', () => {
+    try {
+      // 先從 URL 載入參數
+      loadParamsFromURL();
+      // 如果 URL 有參數，計算時不再更新 URL（避免重複）
+      const hasParams = window.location.search.length > 0;
+      calculate(!hasParams);
+    } catch (err) {
+      console.error(err);
+    }
+  });
+})();
+  </script>
+</body>
+</html>
+
