@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>領錢 vs 股票質押計算機</title>
+  <meta name="description" content="領錢 vs 股票質押計算機：比較直接提領與股票質押在不同報酬率、通膨下的資產變化與淨值。" />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="loan.html" />
+  <meta name="theme-color" content="#2563eb" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="zh_TW" />
+  <meta property="og:title" content="領錢 vs 股票質押計算機" />
+  <meta property="og:description" content="比較直接提領與股票質押在不同報酬率、通膨下的資產變化與淨值。" />
+  <meta property="og:image" content="og_loan.png" />
+  <meta property="og:url" content="loan.html" />
+  <meta property="og:site_name" content="財務與退休工具" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="領錢 vs 股票質押計算機" />
+  <meta name="twitter:description" content="比較直接提領與股票質押在不同報酬率、通膨下的資產變化與淨值。" />
+  <meta name="twitter:image" content="og_loan.png" />
+  <style>
+    :root {
+    --fg: #1f2328;
+    --muted: #6a737d;
+    --accent: #2563eb;
+    --bg: #ffffff;
+    --border: #e1e4e8;
+    }
+
+    * {
+    box-sizing: border-box;
+    }
+    html,
+    body {
+    height: 100%;
+    }
+    body {
+    margin: 0;
+    color: var(--fg);
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji",
+        "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+    }
+
+    .container {
+    max-width: 1080px;
+    margin: 24px auto;
+    padding: 0 16px;
+    }
+
+    h1 {
+    margin: 0 0 16px 0;
+    font-size: 24px;
+    }
+
+    .controls {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 16px;
+    }
+
+    .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    }
+    .field label {
+    font-size: 12px;
+    color: var(--muted);
+    }
+    .field input,
+    .field select {
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+    }
+
+    .actions {
+    display: flex;
+    }
+    button {
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    }
+    button:hover {
+    opacity: 0.9;
+    }
+
+    .chart-wrap {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    }
+
+    .table-wrap {
+    margin-top: 16px;
+    }
+    table {
+    width: 100%;
+    border-collapse: collapse;
+    }
+    th,
+    td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    }
+    th:first-child,
+    td:first-child {
+    text-align: left;
+    }
+    thead th {
+    font-weight: 600;
+    color: var(--muted);
+    }
+
+    .muted {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    }
+
+    .pct-up {
+    color: #16a34a;
+    }
+    .pct-down {
+    color: #dc2626;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { visibility: visible; }
+    
+    .result-summary {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    .result-summary h2 {
+      margin: 0 0 12px 0;
+      font-size: 18px;
+      color: #1e40af;
+    }
+    .result-summary .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .comparison-item {
+      background: white;
+      padding: 12px;
+      border-radius: 6px;
+      border: 2px solid transparent;
+    }
+    .comparison-item.better {
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }
+    .comparison-item h3 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      color: #374151;
+    }
+    .comparison-item p {
+      margin: 4px 0;
+      font-size: 14px;
+    }
+    .comparison-item .highlight {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1e40af;
+    }
+    
+    .table-comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    
+    .table-section h3 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      color: #374151;
+    }
+    
+    table {
+      font-size: 13px;
+    }
+    
+    th, td {
+      padding: 6px 8px;
+    }
+    
+    .positive {
+      color: #16a34a;
+    }
+    .negative {
+      color: #dc2626;
+    }
+    
+    /* 手機版響應式布局 */
+    @media (max-width: 768px) {
+      .controls {
+        grid-template-columns: repeat(3, 1fr) !important;
+      }
+      
+      .actions {
+        grid-column: span 3;
+      }
+      
+      .comparison {
+        grid-template-columns: 1fr !important;
+      }
+      
+      .table-comparison {
+        grid-template-columns: 1fr !important;
+      }
+      
+      table {
+        font-size: 11px;
+      }
+      
+      th, td {
+        padding: 4px 6px;
+        white-space: nowrap;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .controls {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+      
+      .actions {
+        grid-column: span 2;
+      }
+      
+      h1 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>領錢 vs 股票質押計算機</h1>
+    <p class="muted" style="margin: 6px 0 16px;">
+      搭配閱讀：
+      <a href="https://life.huli.tw/2025/10/13/not-so-complete-retirement-guide-1/" target="_blank">半科學退休手冊 - Huli's blog</a>
+    </p>
+
+    <form id="loan-calculator-form" class="controls">
+      <div class="field">
+        <label for="initialAmount">初始金額（萬元）</label>
+        <input id="initialAmount" name="initialAmount" type="number" min="0" step="1" value="1500" required />
+      </div>
+
+      <div class="field">
+        <label for="returnMode">報酬率模式</label>
+        <select id="returnMode" name="returnMode">
+          <option value="fixed" selected>固定報酬率</option>
+          <option value="actual">實際標的</option>
+        </select>
+      </div>
+
+      <div class="field" id="expectedReturnField">
+        <label for="expectedReturn">預期年化報酬率 (%)</label>
+        <input id="expectedReturn" name="expectedReturn" type="number" min="0" max="100" step="0.1" value="10" />
+      </div>
+
+      <div class="field" id="symbolField" style="display: none;">
+        <label for="symbol">標的</label>
+        <select id="symbol" name="symbol">
+          <option value="tw-0050" selected>台灣 0050</option>
+          <option value="tw-0050x2">台灣 0050x2</option>
+          <option value="jp-1306">日本 1306</option>
+          <option value="jp-1321">日本 1321</option>
+          <option value="us-vti">美國 VTI</option>
+          <option value="us-vt">美國 VT</option>
+          <option value="us-qqq">美國 QQQ</option>
+          <option value="us-qld">美國 QLD</option>
+          <option value="us-tqqq">美國 TQQQ</option>
+          <option value="us-brkb">美國 BRKB</option>
+          <option value="us-iwy">美國 IWY</option>
+          <option value="us-voo">美國 VOO</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="annualExpense">退休後年生活費（萬元）</label>
+        <input id="annualExpense" name="annualExpense" type="number" min="0" step="1" value="60" required />
+      </div>
+
+      <div class="field">
+        <label for="withdrawalRate">提領率 (%)</label>
+        <input id="withdrawalRate" name="withdrawalRate" type="number" min="0" max="100" step="0.1" value="4" required />
+      </div>
+
+      <div class="field">
+        <label for="inflationRate">通膨率 (%)</label>
+        <input id="inflationRate" name="inflationRate" type="number" min="0" max="100" step="0.1" value="3" required />
+      </div>
+
+      <div class="actions">
+        <button type="submit">計算</button>
+      </div>
+    </form>
+
+    <div id="result-summary"></div>
+
+    <section class="chart-wrap" style="display: none;">
+      <canvas id="chart" height="120"></canvas>
+    </section>
+
+    <div id="table-comparison" class="table-comparison"></div>
+  </main>
+
+  <script>
+    (() => {
+      const form = document.getElementById('loan-calculator-form');
+      const chartCanvas = document.getElementById('chart');
+      const chartWrap = document.querySelector('.chart-wrap');
+      const resultSummary = document.getElementById('result-summary');
+      const tableComparison = document.getElementById('table-comparison');
+      const returnModeEl = document.getElementById('returnMode');
+      const expectedReturnField = document.getElementById('expectedReturnField');
+      const symbolField = document.getElementById('symbolField');
+
+      let chartInstance = null;
+
+      // 股票質押參數
+      const PLEDGE_INTEREST_RATE = 0.02875; // 年利率2.875%
+
+      function formatWanWithUnit(value) {
+        const wan = Math.floor((value || 0));
+        if (Math.abs(wan) >= 10000) {
+          const yi = wan / 10000;
+          return `${yi.toFixed(1)} 億`;
+        }
+        return `${new Intl.NumberFormat('zh-Hant').format(wan)} 萬`;
+      }
+
+      // 加載股票價格數據
+      async function fetchPrices(symbol) {
+        const res = await fetch(`./data/stock-price/${symbol}.json`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('讀取股價失敗');
+        const tuples = await res.json();
+        return new Map(tuples.map(([y, p]) => [Number(y), Number(p)]));
+      }
+
+      // 從價格數據計算年度報酬率
+      function calculateYearlyReturns(priceMap) {
+        const years = Array.from(priceMap.keys()).sort((a, b) => a - b);
+        const returns = [];
+        for (let i = 1; i < years.length; i++) {
+          const prevPrice = priceMap.get(years[i - 1]);
+          const currPrice = priceMap.get(years[i]);
+          returns.push(currPrice / prevPrice - 1);
+        }
+        return returns;
+      }
+
+      // 方案一：直接提領
+      function computeDirectWithdrawal(params) {
+        const { initialAmount, returns, annualExpense, inflationRate, startYear } = params;
+        const results = [];
+        let assets = initialAmount;
+        let yearExpense = annualExpense;
+        const maxYears = Array.isArray(returns) ? returns.length : 30;
+
+        for (let year = 1; year <= maxYears; year++) {
+          // 年初提領生活費
+          assets -= yearExpense;
+          
+          // 如果資產不足，記錄並停止
+          if (assets <= 0) {
+            results.push({
+              year,
+              calendarYear: startYear ? startYear + year - 1 : null,
+              assets: 0,
+              withdrawal: yearExpense,
+              returnAmount: 0,
+              yearExpense
+            });
+            break;
+          }
+
+          // 剩餘資產投資獲利（使用該年的報酬率）
+          const yearReturn = Array.isArray(returns) ? returns[year - 1] : returns;
+          const returnAmount = assets * yearReturn;
+          assets += returnAmount;
+
+          results.push({
+            year,
+            calendarYear: startYear ? startYear + year - 1 : null,
+            assets,
+            withdrawal: yearExpense,
+            returnAmount,
+            yearExpense
+          });
+
+          // 下一年的生活費隨通膨調整
+          yearExpense *= (1 + inflationRate);
+        }
+
+        return results;
+      }
+
+      // 方案二：股票質押
+      function computePledgeLoan(params) {
+        const { initialAmount, returns, annualExpense, inflationRate, startYear } = params;
+        const results = [];
+        let assets = initialAmount;
+        let totalLoan = 0;
+        let yearExpense = annualExpense;
+        const maxYears = Array.isArray(returns) ? returns.length : 30;
+
+        for (let year = 1; year <= maxYears; year++) {
+          // 先計算資產增長（年初投資收益，使用該年的報酬率）
+          const yearReturn = Array.isArray(returns) ? returns[year - 1] : returns;
+          const returnAmount = assets * yearReturn;
+          assets += returnAmount;
+          
+          // 計算本年需要的生活費
+          const neededAmount = yearExpense;
+          
+          // 計算本年需要借的錢：
+          // 設本年借款為 X
+          // 年底總貸款 = totalLoan + X
+          // 年底需支付的利息 = (totalLoan + X) * 利率
+          // 借款需要足夠支付：生活費 + 年底利息
+          // X = 生活費 + (totalLoan + X) * 利率
+          // X = 生活費 + totalLoan * 利率 + X * 利率
+          // X - X * 利率 = 生活費 + totalLoan * 利率
+          // X * (1 - 利率) = 生活費 + totalLoan * 利率
+          // X = (生活費 + totalLoan * 利率) / (1 - 利率)
+          
+          const actualBorrow = (neededAmount + totalLoan * PLEDGE_INTEREST_RATE) / (1 - PLEDGE_INTEREST_RATE);
+          const borrowedForExpense = neededAmount;
+          
+          // 更新總貸款
+          totalLoan += actualBorrow;
+          
+          // 計算年底需支付的利息（基於年底的總貸款）
+          const interest = totalLoan * PLEDGE_INTEREST_RATE;
+          const borrowedForInterest = actualBorrow - neededAmount; // 借款中用於支付利息的部分
+          
+          // 計算借款率（總借款/總資產）
+          const loanRatio = assets > 0 ? (totalLoan / assets) : 0;
+
+          results.push({
+            year,
+            calendarYear: startYear ? startYear + year - 1 : null,
+            assets,
+            totalLoan,
+            interest,
+            borrowed: actualBorrow,
+            borrowedForExpense,
+            borrowedForInterest,
+            returnAmount,
+            yearExpense,
+            loanRatio
+          });
+
+          // 下一年的生活費隨通膨調整
+          yearExpense *= (1 + inflationRate);
+        }
+
+        return results;
+      }
+
+      function renderSummary(directResults, pledgeResults, avgReturn) {
+        const directFinalAssets = directResults.length > 0 ? directResults[directResults.length - 1].assets : 0;
+        const pledgeFinalAssets = pledgeResults.length > 0 ? pledgeResults[pledgeResults.length - 1].assets : 0;
+        const pledgeFinalLoan = pledgeResults.length > 0 ? pledgeResults[pledgeResults.length - 1].totalLoan : 0;
+        const pledgeFinalLoanRatio = pledgeResults.length > 0 ? pledgeResults[pledgeResults.length - 1].loanRatio : 0;
+        const pledgeNetAssets = pledgeFinalAssets - pledgeFinalLoan;
+
+        const directBetter = directFinalAssets > pledgeNetAssets;
+        const pledgeBetter = pledgeNetAssets > directFinalAssets;
+
+        const directTotalInterest = 0;
+        // 總利息支出 = 所有借款用於利息的總和
+        const pledgeTotalInterest = pledgeResults.reduce((sum, r) => sum + (r.borrowedForInterest || 0), 0);
+
+        // 年份範圍資訊
+        const totalYears = directResults.length;
+        const firstYear = directResults.length > 0 && directResults[0].calendarYear ? directResults[0].calendarYear : null;
+        const lastYear = directResults.length > 0 && directResults[directResults.length - 1].calendarYear ? directResults[directResults.length - 1].calendarYear : null;
+        const yearRangeText = firstYear && lastYear ? `${firstYear}-${lastYear} (${totalYears} 年)` : `${totalYears} 年`;
+
+        resultSummary.innerHTML = `
+          <div class="result-summary">
+            <h2>📊 ${yearRangeText}後比較結果</h2>
+            <p style="font-size: 14px; color: #6b7280; margin: 8px 0;">標的平均年化報酬率：<span style="font-weight: 600; color: #2563eb;">${(avgReturn * 100).toFixed(2)}%</span></p>
+            <div class="comparison">
+              <div class="comparison-item ${directBetter ? 'better' : ''}">
+                <h3>💵 方案一：直接提領</h3>
+                <p>剩餘資產：<span class="highlight">${formatWanWithUnit(directFinalAssets)}</span></p>
+                <p>總利息支出：<span class="highlight">0 萬</span></p>
+                <p style="font-size: 12px; color: #6b7280; margin-top: 8px;">每年年初提領生活費，剩餘資金投資</p>
+              </div>
+              <div class="comparison-item ${pledgeBetter ? 'better' : ''}">
+                <h3>🏦 方案二：股票質押</h3>
+                <p>總資產：<span class="highlight">${formatWanWithUnit(pledgeFinalAssets)}</span></p>
+                <p>總貸款：<span class="highlight ${pledgeFinalLoan > 0 ? 'negative' : ''}">${formatWanWithUnit(pledgeFinalLoan)}</span></p>
+                <p>借款率：<span class="highlight ${pledgeFinalLoanRatio > 0.5 ? 'negative' : ''}">${(pledgeFinalLoanRatio * 100).toFixed(1)}%</span></p>
+                <p>淨資產：<span class="highlight">${formatWanWithUnit(pledgeNetAssets)}</span></p>
+                <p>總利息支出：<span class="highlight negative">${formatWanWithUnit(pledgeTotalInterest)}</span></p>
+                <p style="font-size: 12px; color: #6b7280; margin-top: 8px;">年利率2.875%<br/>股票不賣出，利息用借款支付</p>
+              </div>
+            </div>
+            ${directBetter ? '<p style="margin-top: 12px; font-weight: 600; color: #16a34a;">✅ 直接提領方案較優</p>' : ''}
+            ${pledgeBetter ? '<p style="margin-top: 12px; font-weight: 600; color: #16a34a;">✅ 股票質押方案較優</p>' : ''}
+            ${directFinalAssets === pledgeNetAssets ? '<p style="margin-top: 12px; font-weight: 600; color: #6b7280;">⚖️ 兩方案結果相同</p>' : ''}
+          </div>
+        `;
+      }
+
+      function renderChart(directResults, pledgeResults) {
+        const years = Math.max(directResults.length, pledgeResults.length);
+        // 使用實際年份作為標籤（如果有的話）
+        const labels = directResults.length > 0 && directResults[0].calendarYear
+          ? directResults.map(r => String(r.calendarYear))
+          : Array.from({ length: years }, (_, i) => `第${i + 1}年`);
+        
+        const directAssets = directResults.map(r => r.assets);
+        const pledgeAssets = pledgeResults.map(r => r.assets);
+        const pledgeNetAssets = pledgeResults.map(r => r.assets - r.totalLoan);
+
+        if (chartInstance) {
+          chartInstance.destroy();
+          chartInstance = null;
+        }
+
+        chartWrap.style.display = '';
+
+        chartInstance = new Chart(chartCanvas.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: '直接提領 - 剩餘資產',
+                data: directAssets,
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                tension: 0.2,
+              },
+              {
+                label: '股票質押 - 總資產',
+                data: pledgeAssets,
+                borderColor: '#16a34a',
+                backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                tension: 0.2,
+                borderDash: [5, 5],
+              },
+              {
+                label: '股票質押 - 淨資產',
+                data: pledgeNetAssets,
+                borderColor: '#dc2626',
+                backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                tension: 0.2,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'top' },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => `${ctx.dataset.label}: ${formatWanWithUnit(ctx.parsed.y)}`
+                }
+              }
+            },
+            scales: {
+              y: {
+                ticks: {
+                  callback: (v) => {
+                    const wan = Math.floor(v);
+                    if (wan >= 10000) {
+                      return (wan / 10000).toFixed(1) + ' 億';
+                    }
+                    return new Intl.NumberFormat('zh-Hant').format(wan) + ' 萬';
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      function renderTables(directResults, pledgeResults) {
+        // 方案一表格
+        const directTable = document.createElement('div');
+        directTable.className = 'table-section';
+        directTable.innerHTML = '<h3>💵 方案一：直接提領</h3>';
+        
+        const directTableEl = document.createElement('table');
+        directTableEl.innerHTML = `
+          <thead>
+            <tr>
+              <th>年份</th>
+              <th>提領金額</th>
+              <th>投資收益</th>
+              <th>剩餘資產</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${directResults.map(r => `
+              <tr>
+                <td>${r.calendarYear ? r.calendarYear : `第 ${r.year} 年`}</td>
+                <td class="muted">${formatWanWithUnit(r.withdrawal)}</td>
+                <td class="${r.returnAmount > 0 ? 'positive' : 'muted'}">${formatWanWithUnit(r.returnAmount)}</td>
+                <td>${formatWanWithUnit(r.assets)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        `;
+        directTable.appendChild(directTableEl);
+
+        // 方案二表格
+        const pledgeTable = document.createElement('div');
+        pledgeTable.className = 'table-section';
+        pledgeTable.innerHTML = '<h3>🏦 方案二：股票質押</h3>';
+        
+        const pledgeTableEl = document.createElement('table');
+        pledgeTableEl.innerHTML = `
+          <thead>
+            <tr>
+              <th>年份</th>
+              <th>投資收益</th>
+              <th>借款</th>
+              <th>利息</th>
+              <th>總借款</th>
+              <th>借款率</th>
+              <th>總資產</th>
+              <th>淨資產</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pledgeResults.map(r => {
+              const netAssets = r.assets - r.totalLoan;
+              const loanRatioPercent = (r.loanRatio * 100).toFixed(1);
+              const loanRatioClass = r.loanRatio > 0.5 ? 'negative' : (r.loanRatio > 0.3 ? 'muted' : 'positive');
+              return `
+                <tr>
+                  <td>${r.calendarYear ? r.calendarYear : `第 ${r.year} 年`}</td>
+                  <td class="${r.returnAmount > 0 ? 'positive' : 'muted'}">${formatWanWithUnit(r.returnAmount)}</td>
+                  <td class="muted">${formatWanWithUnit(r.borrowedForExpense)}</td>
+                  <td class="muted">${formatWanWithUnit(r.borrowedForInterest)}</td>
+                  <td class="${r.totalLoan > 0 ? 'negative' : 'muted'}">${formatWanWithUnit(r.totalLoan)}</td>
+                  <td class="${loanRatioClass}">${loanRatioPercent}%</td>
+                  <td>${formatWanWithUnit(r.assets)}</td>
+                  <td class="${netAssets > 0 ? 'positive' : 'negative'}">${formatWanWithUnit(netAssets)}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        `;
+        pledgeTable.appendChild(pledgeTableEl);
+
+        tableComparison.innerHTML = '';
+        tableComparison.appendChild(directTable);
+        tableComparison.appendChild(pledgeTable);
+      }
+
+      function updateURLParams(formData) {
+        const searchParams = new URLSearchParams();
+        searchParams.set('amount', formData.get('initialAmount'));
+        searchParams.set('mode', formData.get('returnMode'));
+        
+        if (formData.get('returnMode') === 'fixed') {
+          searchParams.set('return', formData.get('expectedReturn'));
+        } else {
+          searchParams.set('symbol', formData.get('symbol'));
+        }
+        
+        searchParams.set('expense', formData.get('annualExpense'));
+        searchParams.set('withdrawal', formData.get('withdrawalRate'));
+        searchParams.set('inflation', formData.get('inflationRate'));
+        
+        const newURL = `${window.location.pathname}?${searchParams.toString()}`;
+        window.history.pushState({}, '', newURL);
+      }
+
+      function loadParamsFromURL() {
+        const searchParams = new URLSearchParams(window.location.search);
+        
+        if (searchParams.has('amount')) {
+          document.getElementById('initialAmount').value = searchParams.get('amount');
+        }
+        if (searchParams.has('mode')) {
+          document.getElementById('returnMode').value = searchParams.get('mode');
+        }
+        if (searchParams.has('return')) {
+          document.getElementById('expectedReturn').value = searchParams.get('return');
+        }
+        if (searchParams.has('symbol')) {
+          document.getElementById('symbol').value = searchParams.get('symbol');
+        }
+        if (searchParams.has('expense')) {
+          document.getElementById('annualExpense').value = searchParams.get('expense');
+        }
+        if (searchParams.has('withdrawal')) {
+          document.getElementById('withdrawalRate').value = searchParams.get('withdrawal');
+        }
+        if (searchParams.has('inflation')) {
+          document.getElementById('inflationRate').value = searchParams.get('inflation');
+        }
+      }
+
+      async function calculate(shouldUpdateURL = true) {
+        const formData = new FormData(form);
+        const returnMode = formData.get('returnMode') || 'fixed';
+        
+        if (shouldUpdateURL) {
+          updateURLParams(formData);
+        }
+        
+        let returns;
+        let startYear = null;
+        let avgReturn = 0;
+        
+        if (returnMode === 'actual') {
+          // 使用實際標的數據
+          const symbol = formData.get('symbol') || 'tw-0050';
+          const priceMap = await fetchPrices(symbol);
+          returns = calculateYearlyReturns(priceMap);
+          
+          // 股票價格是年底價格，所以第一年是基準年
+          // 實際投資從第二年開始，第1年報酬率 = 第二年價格/第一年價格 - 1
+          const years = Array.from(priceMap.keys()).sort((a, b) => a - b);
+          startYear = years[1]; // 從第二年開始
+          
+          // 計算年化報酬率（CAGR）
+          const firstPrice = priceMap.get(years[0]);
+          const lastPrice = priceMap.get(years[years.length - 1]);
+          const totalYears = years.length - 1;
+          avgReturn = Math.pow(lastPrice / firstPrice, 1 / totalYears) - 1;
+        } else {
+          // 使用固定報酬率
+          returns = Number(formData.get('expectedReturn') || 10) / 100;
+          avgReturn = returns;
+        }
+
+        const params = {
+          initialAmount: Number(formData.get('initialAmount') || 1500),
+          returns: returns,
+          annualExpense: Number(formData.get('annualExpense') || 60),
+          withdrawalRate: Number(formData.get('withdrawalRate') || 4) / 100,
+          inflationRate: Number(formData.get('inflationRate') || 3) / 100,
+          startYear: startYear,
+        };
+
+        const directResults = computeDirectWithdrawal(params);
+        const pledgeResults = computePledgeLoan(params);
+
+        renderSummary(directResults, pledgeResults, avgReturn);
+        renderChart(directResults, pledgeResults);
+        renderTables(directResults, pledgeResults);
+      }
+
+      function updateReturnModeFields() {
+        const mode = returnModeEl.value;
+        if (mode === 'actual') {
+          expectedReturnField.style.display = 'none';
+          symbolField.style.display = '';
+        } else {
+          expectedReturnField.style.display = '';
+          symbolField.style.display = 'none';
+        }
+      }
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        calculate().catch(err => alert(err.message || String(err)));
+      });
+
+      returnModeEl.addEventListener('change', () => {
+        updateReturnModeFields();
+      });
+
+      // 初次載入即計算一次
+      window.addEventListener('DOMContentLoaded', () => {
+        // 先從 URL 載入參數
+        loadParamsFromURL();
+        // 更新顯示
+        updateReturnModeFields();
+        // 如果 URL 有參數，計算時不再更新 URL（避免重複）
+        const hasParams = window.location.search.length > 0;
+        calculate(!hasParams).catch(err => console.error(err));
+      });
+    })();
+  </script>
+</body>
+</html>
+
